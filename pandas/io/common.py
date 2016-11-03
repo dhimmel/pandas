@@ -287,8 +287,10 @@ else:
     ZipFile = zipfile.ZipFile
 
 
-def _get_handle(source, mode, encoding=None, compression=None, memory_map=False):
-    """Gets file handle for given path and mode.
+def _get_handle(source, mode, encoding=None, compression=None,
+                memory_map=False):
+    """
+    Get file handle for given path/buffer and mode.
     """
 
     f = source
@@ -297,74 +299,72 @@ def _get_handle(source, mode, encoding=None, compression=None, memory_map=False)
     # in Python 3, convert BytesIO or fileobjects passed with an encoding
     if compat.PY3 and isinstance(source, compat.BytesIO):
         from io import TextIOWrapper
-
         return TextIOWrapper(source, encoding=encoding)
 
-    elif compression is not None:
+    elif compression:
         compression = compression.lower()
-        if encoding is not None and not compat.PY3 and not is_path:
-            msg = 'encoding + compression not yet supported in Python 2'
+        
+        if compat.PY2 and not is_path and encoding:
+            msg = 'compression with encoding is not yet supported in Python 2'
             raise ValueError(msg)
 
         # GZ Compression
         if compression == 'gzip':
             import gzip
-
-            f = gzip.GzipFile(source, mode) \
-                if is_path else gzip.GzipFile(fileobj=source)
+            if is_path:
+                f = gzip.open(source, mode)
+            else:
+                f = gzip.GzipFile(fileobj=source)
 
         # BZ Compression
         elif compression == 'bz2':
             import bz2
-
             if is_path:
                 f = bz2.BZ2File(source, mode)
-
-            else:
-                f = bz2.BZ2File(source) if compat.PY3 else StringIO(
-                    bz2.decompress(source.read()))
+            elif compat.PY2:
                 # Python 2's bz2 module can't take file objects, so have to
                 # run through decompress manually
+                f = StringIO(bz2.decompress(source.read()))
+            else:
+                f = bz2.BZ2File(source)
 
         # ZIP Compression
         elif compression == 'zip':
-            import zipfile
             zip_file = zipfile.ZipFile(source)
-            zip_names = zip_file.namelist()
-
-            if len(zip_names) == 1:
-                f = zip_file.open(zip_names.pop())
-            elif len(zip_names) == 0:
-                raise ValueError('Zero files found in ZIP file {}'
-                                 .format(source))
-            else:
-                raise ValueError('Multiple files found in ZIP file.'
-                                 ' Only one file per ZIP :{}'
-                                 .format(zip_names))
+            try:
+                name, = zip_file.namelist()
+            except ValueError:
+                msg = 'Zip file must contain exactly one file {}'.format(source)
+                raise ValueError(msg)
+            f = zip_file.open(zip_names.pop())
 
         # XZ Compression
         elif compression == 'xz':
             lzma = compat.import_lzma()
             f = lzma.LZMAFile(source, mode)
-
+        
+        # Unrecognized Compression
         else:
-            raise ValueError('Unrecognized compression: %s' % compression)
+            msg = 'Unrecognized compression: {}'.format(compression)
+            raise ValueError(msg)
 
+        # In Python 3
         if compat.PY3:
             from io import TextIOWrapper
-
             f = TextIOWrapper(f, encoding=encoding)
 
         return f
 
     elif is_path:
-        if compat.PY3:
-            if encoding:
-                f = open(source, mode, encoding=encoding)
-            else:
-                f = open(source, mode, errors='replace')
-        else:
+        if compat.PY2:
+            # Python 2
             f = open(source, mode)
+        elif encoding:
+            # Python 3 and encoding
+            f = open(source, mode, encoding=encoding)
+        else:
+            # Python 3 and no explicit encoding
+            f = open(source, mode, errors='replace')
 
     if memory_map and hasattr(f, 'fileno'):
         try:
