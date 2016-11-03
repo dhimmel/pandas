@@ -45,17 +45,17 @@ class CompressionTests(object):
                 tmp.writestr(file_name, data)
             tmp.close()
 
-            self.assertRaisesRegexp(ValueError, 'must contain exactly one file',
+            self.assertRaisesRegexp(ValueError, 'Multiple files',
                                     self.read_csv, path, compression='zip')
 
-            self.assertRaisesRegexp(ValueError, 'must contain exactly one file',
+            self.assertRaisesRegexp(ValueError, 'Multiple files',
                                     self.read_csv, path, compression='infer')
 
         with tm.ensure_clean() as path:
             tmp = zipfile.ZipFile(path, mode='w')
             tmp.close()
 
-            self.assertRaisesRegexp(ValueError, 'must contain exactly one file',
+            self.assertRaisesRegexp(ValueError, 'Zero files',
                                     self.read_csv, path, compression='zip')
 
         with tm.ensure_clean() as path:
