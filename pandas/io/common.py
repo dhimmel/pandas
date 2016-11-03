@@ -279,6 +279,22 @@ def _get_handle(path_or_buf, mode, encoding=None, compression=None,
                 memory_map=False):
     """
     Get file handle for given path/buffer and mode.
+
+    Parameters
+    ----------
+    path_or_buf :
+        a path (str) or buffer
+    mode : str
+        mode to open path_or_buf with
+    encoding : str or None
+    compression : str or None
+        Supported compression protocols are gzip, bz2, zip, and xz
+    memory_map : boolean, default False
+        See parsers._parser_params for more information.
+
+    Returns
+    -------
+    A file like object.
     """
 
     f = path_or_buf
