@@ -278,7 +278,7 @@ def file_path_to_url(path):
 
 # ZipFile is not a context manager for <= 2.6
 # must be tuple index here since 2.6 doesn't use namedtuple for version_info
-if sys.version_info[1] <= 6:
+if compat.PY2 and sys.version_info[1] <= 6:
     @contextmanager
     def ZipFile(*args, **kwargs):
         with closing(zipfile.ZipFile(*args, **kwargs)) as zf:
