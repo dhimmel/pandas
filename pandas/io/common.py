@@ -5,7 +5,6 @@ import os
 import csv
 import codecs
 import mmap
-import zipfile
 from contextlib import contextmanager, closing
 
 from pandas.compat import StringIO, BytesIO, string_types, text_type
@@ -276,17 +275,6 @@ def file_path_to_url(path):
     return urljoin('file:', pathname2url(path))
 
 
-# ZipFile is not a context manager for <= 2.6
-# must be tuple index here since 2.6 doesn't use namedtuple for version_info
-if compat.PY2 and sys.version_info[1] <= 6:
-    @contextmanager
-    def ZipFile(*args, **kwargs):
-        with closing(zipfile.ZipFile(*args, **kwargs)) as zf:
-            yield zf
-else:
-    ZipFile = zipfile.ZipFile
-
-
 def _get_handle(source, mode, encoding=None, compression=None,
                 memory_map=False):
     """
@@ -330,6 +318,7 @@ def _get_handle(source, mode, encoding=None, compression=None,
 
         # ZIP Compression
         elif compression == 'zip':
+            import zipfile
             zip_file = zipfile.ZipFile(source)
             try:
                 name, = zip_file.namelist()
