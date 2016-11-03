@@ -275,23 +275,23 @@ def file_path_to_url(path):
     return urljoin('file:', pathname2url(path))
 
 
-def _get_handle(source, mode, encoding=None, compression=None,
+def _get_handle(path_or_buf, mode, encoding=None, compression=None,
                 memory_map=False):
     """
     Get file handle for given path/buffer and mode.
     """
 
-    f = source
-    is_path = isinstance(source, compat.string_types)
+    f = path_or_buf
+    is_path = isinstance(path_or_buf, compat.string_types)
 
     # in Python 3, convert BytesIO or fileobjects passed with an encoding
-    if compat.PY3 and isinstance(source, compat.BytesIO):
+    if compat.PY3 and isinstance(path_or_buf, compat.BytesIO):
         from io import TextIOWrapper
-        return TextIOWrapper(source, encoding=encoding)
+        return TextIOWrapper(path_or_buf, encoding=encoding)
 
     elif compression:
         compression = compression.lower()
-        
+
         if compat.PY2 and not is_path and encoding:
             msg = 'compression with encoding is not yet supported in Python 2'
             raise ValueError(msg)
@@ -300,38 +300,38 @@ def _get_handle(source, mode, encoding=None, compression=None,
         if compression == 'gzip':
             import gzip
             if is_path:
-                f = gzip.open(source, mode)
+                f = gzip.open(path_or_buf, mode)
             else:
-                f = gzip.GzipFile(fileobj=source)
+                f = gzip.GzipFile(fileobj=path_or_buf)
 
         # BZ Compression
         elif compression == 'bz2':
             import bz2
             if is_path:
-                f = bz2.BZ2File(source, mode)
+                f = bz2.BZ2File(path_or_buf, mode)
             elif compat.PY2:
                 # Python 2's bz2 module can't take file objects, so have to
                 # run through decompress manually
-                f = StringIO(bz2.decompress(source.read()))
+                f = StringIO(bz2.decompress(path_or_buf.read()))
             else:
-                f = bz2.BZ2File(source)
+                f = bz2.BZ2File(path_or_buf)
 
         # ZIP Compression
         elif compression == 'zip':
             import zipfile
-            zip_file = zipfile.ZipFile(source)
+            zip_file = zipfile.ZipFile(path_or_buf)
             try:
                 name, = zip_file.namelist()
             except ValueError:
-                msg = 'Zip file must contain exactly one file {}'.format(source)
-                raise ValueError(msg)
-            f = zip_file.open(zip_names.pop())
+                raise ValueError('Zip file must contain exactly one file {}'
+                                 .format(path_or_buf))
+            f = zip_file.open(name)
 
         # XZ Compression
         elif compression == 'xz':
             lzma = compat.import_lzma()
-            f = lzma.LZMAFile(source, mode)
-        
+            f = lzma.LZMAFile(path_or_buf, mode)
+
         # Unrecognized Compression
         else:
             msg = 'Unrecognized compression: {}'.format(compression)
@@ -347,13 +347,13 @@ def _get_handle(source, mode, encoding=None, compression=None,
     elif is_path:
         if compat.PY2:
             # Python 2
-            f = open(source, mode)
+            f = open(path_or_buf, mode)
         elif encoding:
             # Python 3 and encoding
-            f = open(source, mode, encoding=encoding)
+            f = open(path_or_buf, mode, encoding=encoding)
         else:
             # Python 3 and no explicit encoding
-            f = open(source, mode, errors='replace')
+            f = open(path_or_buf, mode, errors='replace')
 
     if memory_map and hasattr(f, 'fileno'):
         try:
