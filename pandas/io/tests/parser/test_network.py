@@ -15,7 +15,14 @@ from pandas.io.parsers import read_csv, read_table
 
 
 class TestCompressedUrl(tm.TestCase):
-
+    
+    compression_to_extension = {
+        'gzip': '.gz',
+        'bz2': '.bz2',
+        'zip': '.zip',
+        'xz': '.xz',
+    }
+    
     def setUp(self):
         dirpath = tm.get_data_path()
         path = os.path.join(dirpath, 'salary.table.csv')
@@ -27,51 +34,15 @@ class TestCompressedUrl(tm.TestCase):
                          'pandas/io/tests/parser/data/salaries.csv')
 
     @tm.network
-    def test_url_gz(self):
-        url = self.base_url + '.gz'
-        url_table = read_table(url, compression="gzip", engine="python")
-        tm.assert_frame_equal(url_table, self.local_table)
+    def test_compressed_urls(self):
+        """Test reading compressed tables from URL."""
+        for compression, extension in self.compression_to_extension.items():
+            url = self.base_url + extension
+            yield self.check_table, url, compression
+            yield self.check_table, url, 'infer'
 
-    @tm.network
-    def test_url_bz2(self):
-        url = self.base_url + '.bz2'
-        url_table = read_table(url, compression="bz2", engine="python")
-        tm.assert_frame_equal(url_table, self.local_table)
-
-    @tm.network
-    def test_url_xz(self):
-        url = self.base_url + '.xz'
-        url_table = read_table(url, compression="zip", engine="python")
-        tm.assert_frame_equal(url_table, self.local_table)
-
-    @tm.network
-    def test_url_zip(self):
-        url = self.base_url + '.zip'
-        url_table = read_table(url, compression="zip", engine="python")
-        tm.assert_frame_equal(url_table, self.local_table)
-
-    @tm.network
-    def test_url_gz_infer(self):
-        url = self.base_url + '.gz'
-        url_table = read_table(url, compression="infer", engine="python")
-        tm.assert_frame_equal(url_table, self.local_table)
-
-    @tm.network
-    def test_url_bz2_infer(self):
-        url = self.base_url + '.bz2'
-        url_table = read_table(url, compression="infer", engine="python")
-        tm.assert_frame_equal(url_table, self.local_table)
-
-    @tm.network
-    def test_url_xz_infer(self):
-        url = self.base_url + '.xz'
-        url_table = read_table(url, compression="infer", engine="python")
-        tm.assert_frame_equal(url_table, self.local_table)
-
-    @tm.network
-    def test_url_zip_infer(self):
-        url = self.base_url + '.zip'
-        url_table = read_table(url, compression="infer", engine="python")
+    def check_table(url, compression, engine='python'):
+        url_table = read_table(url, compression=compression, engine=engine)
         tm.assert_frame_equal(url_table, self.local_table)
 
 
