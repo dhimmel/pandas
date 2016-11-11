@@ -14,7 +14,7 @@ from pandas import compat
 from pandas.io.parsers import read_csv, read_table
 
 
-class TestCompressedUrl(tm.TestCase):
+class TestCompressedUrl:
     
     compression_to_extension = {
         'gzip': '.gz',
@@ -23,9 +23,8 @@ class TestCompressedUrl(tm.TestCase):
         'xz': '.xz',
     }
     
-    def setUp(self):
-        dirpath = tm.get_data_path()
-        path = os.path.join(dirpath, 'salary.table.csv')
+    def __init__(self):
+        path = os.path.join(tm.get_data_path(), 'salary.table.csv')
         self.local_table = read_table(path)
         # NOTE: change URL once https://github.com/pandas-dev/pandas/pull/14587
         # is merged.
@@ -33,7 +32,6 @@ class TestCompressedUrl(tm.TestCase):
                          '24341b53341455433abcb6d01a2c7b4071e35316/'
                          'pandas/io/tests/parser/data/salaries.csv')
 
-    @tm.network
     def test_compressed_urls(self):
         """Test reading compressed tables from URL."""
         for compression, extension in self.compression_to_extension.items():
