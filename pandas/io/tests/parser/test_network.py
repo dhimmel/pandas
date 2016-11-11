@@ -26,10 +26,7 @@ class TestCompressedUrl:
     def __init__(self):
         path = os.path.join(tm.get_data_path(), 'salary.table.csv')
         self.local_table = read_table(path)
-        # NOTE: change URL once https://github.com/pandas-dev/pandas/pull/14587
-        # is merged.
-        self.base_url = ('https://github.com/dhimmel/pandas/raw/'
-                         '24341b53341455433abcb6d01a2c7b4071e35316/'
+        self.base_url = ('https://github.com/pandas-dev/pandas/raw/master/'
                          'pandas/io/tests/parser/data/salaries.csv')
 
     def test_compressed_urls(self):
