@@ -24,7 +24,7 @@ class TestCompressedUrl:
     }
     
     def __init__(self):
-        path = os.path.join(tm.get_data_path(), 'salary.table.csv')
+        path = os.path.join(tm.get_data_path(), 'salaries.csv')
         self.local_table = read_table(path)
         self.base_url = ('https://github.com/pandas-dev/pandas/raw/master/'
                          'pandas/io/tests/parser/data/salaries.csv')
