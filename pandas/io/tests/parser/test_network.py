@@ -14,7 +14,7 @@ from pandas import compat
 from pandas.io.parsers import read_csv, read_table
 
 
-class TestCompressedUrl:
+class TestCompressedUrl(object):
     
     compression_to_extension = {
         'gzip': '.gz',
