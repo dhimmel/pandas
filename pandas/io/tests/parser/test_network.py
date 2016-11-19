@@ -7,6 +7,7 @@ and hence require a network connection to be read.
 
 import os
 import nose
+import functools
 
 import pandas.util.testing as tm
 from pandas import DataFrame
@@ -31,12 +32,18 @@ class TestCompressedUrl(object):
 
     def test_compressed_urls(self):
         """Test reading compressed tables from URL."""
+        # test_fxn is a workaround for more descriptive nose reporting.
+        # See http://stackoverflow.com/a/37393684/4651668.
+        test_fxn = functools.partial(self.check_table)
+
         for compression, extension in self.compression_to_extension.items():
             url = self.base_url + extension
-            yield self.check_table, url, compression
-            yield self.check_table, url, 'infer'
+            # args is a (compression, engine) tuple
+            for args in [(compression, 'python'), ('infer', 'python')]:
+                test_fxn.description = '{} compression, {} engine'.format(*args)
+                yield (test_fxn, url) + args
 
-    def check_table(url, compression, engine='python'):
+    def check_table(self, url, compression, engine):
         url_table = read_table(url, compression=compression, engine=engine)
         tm.assert_frame_equal(url_table, self.local_table)
 
