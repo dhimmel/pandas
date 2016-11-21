@@ -32,15 +32,17 @@ class TestCompressedUrl(object):
 
     def test_compressed_urls(self):
         """Test reading compressed tables from URL."""
-        # test_fxn is a workaround for more descriptive nose reporting.
-        # See http://stackoverflow.com/a/37393684/4651668.
-        test_fxn = functools.partial(self.check_table)
-
+        msg = ('Test reading {}-compressed tables from URL: '
+               'compression="{}", engine="{}"')
+        
         for compression, extension in self.compression_to_extension.items():
             url = self.base_url + extension
             # args is a (compression, engine) tuple
             for args in [(compression, 'python'), ('infer', 'python')]:
-                test_fxn.description = '{} compression, {} engine'.format(*args)
+                # test_fxn is a workaround for more descriptive nose reporting.
+                # See http://stackoverflow.com/a/37393684/4651668.
+                test_fxn = functools.partial(self.check_table)
+                test_fxn.description = msg.format(compression, *args)
                 yield (test_fxn, url) + args
 
     def check_table(self, url, compression, engine):
