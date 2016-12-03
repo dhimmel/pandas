@@ -348,38 +348,44 @@ def _validate_nrows(nrows):
     return nrows
 
 
+_compression_to_extension = {
+    'gzip': '.gz',
+    'bz2': '.bz2',
+    'zip': '.zip',
+    'xz': '.xz',
+}
+
+def _infer_compression(filepath_or_buffer):
+    """
+    Infer compression of a filepath or buffer. In case of buffer, compression
+    is None. Otherwise, inference is perfomed using the extension of the
+    filename or URL.
+    """
+    if not isinstance(filepath_or_buffer, compat.string_types):
+        return None
+    filepath = str(filepath_or_buffer)
+    for compression, extension in _compression_to_extension.items():
+        if filepath.endswith(extension):
+            return compression
+    return None
+
 def _read(filepath_or_buffer, kwds):
-    "Generic reader of line files."
+    """Generic reader of line files."""
     encoding = kwds.get('encoding', None)
     if encoding is not None:
         encoding = re.sub('_', '-', encoding).lower()
         kwds['encoding'] = encoding
 
-    # If the input could be a filename, check for a recognizable compression
-    # extension.  If we're reading from a URL, the `get_filepath_or_buffer`
-    # will use header info to determine compression, so use what it finds in
-    # that case.
-    inferred_compression = kwds.get('compression')
-    if inferred_compression == 'infer':
-        if isinstance(filepath_or_buffer, compat.string_types):
-            if filepath_or_buffer.endswith('.gz'):
-                inferred_compression = 'gzip'
-            elif filepath_or_buffer.endswith('.bz2'):
-                inferred_compression = 'bz2'
-            elif filepath_or_buffer.endswith('.zip'):
-                inferred_compression = 'zip'
-            elif filepath_or_buffer.endswith('.xz'):
-                inferred_compression = 'xz'
-            else:
-                inferred_compression = None
-        else:
-            inferred_compression = None
+    compression = kwds.get('compression')
+    if compression not in set(_compression_to_extension) | {None, 'infer'}:
+        raise ValueError('"{}" is not a valid compression'.format(compression))
+
+    if compression == 'infer':
+        compression = _infer_compression(filepath_or_buffer)
 
     filepath_or_buffer, _, compression = get_filepath_or_buffer(
-        filepath_or_buffer, encoding,
-        compression=kwds.get('compression', None))
-    kwds['compression'] = (inferred_compression if compression == 'infer'
-                           else compression)
+        filepath_or_buffer, encoding, compression)
+    kwds['compression'] = compression
 
     if kwds.get('date_parser', None) is not None:
         if isinstance(kwds['parse_dates'], bool):
