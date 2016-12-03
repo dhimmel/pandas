@@ -140,39 +140,6 @@ def _is_s3_url(url):
         return False
 
 
-def maybe_read_encoded_stream(reader, encoding=None, compression=None):
-    """
-    Read an encoded stream from the reader and transform the bytes to unicode if
-    required based on the encoding.
-
-    Parameters
-    ----------
-    reader : a streamable file-like object
-    encoding : optional, the encoding to attempt to read
-
-    Returns
-    -------
-    a tuple of (a stream of decoded bytes, the encoding which was used)
-    """
-
-    if compat.PY3 or encoding is not None:  # pragma: no cover
-        if encoding:
-            errors = 'strict'
-        else:
-            errors = 'replace'
-            encoding = 'utf-8'
-
-        if compression == 'gzip':
-            reader = BytesIO(reader.read())
-        else:
-            reader = StringIO(reader.read().decode(encoding, errors))
-    else:
-        if compression == 'gzip':
-            reader = BytesIO(reader.read())
-        encoding = None
-    return reader, encoding
-
-
 def _expand_user(filepath_or_buffer):
     """Return the argument with an initial component of ~ or ~user
        replaced by that user's home directory.
@@ -242,7 +209,7 @@ def get_filepath_or_buffer(filepath_or_buffer, encoding=None,
         if content_encoding == 'gzip':
             # Override compression based on Content-Encoding header
             compression = 'gzip'
-        reader, encoding = maybe_read_encoded_stream(req, encoding, compression)
+        reader = BytesIO(req.read())
         return reader, encoding, compression
 
     if _is_s3_url(filepath_or_buffer):
@@ -296,12 +263,7 @@ def _get_handle(path_or_buf, mode, encoding=None, compression=None,
     f = path_or_buf
     is_path = isinstance(path_or_buf, compat.string_types)
 
-    # in Python 3, convert BytesIO or fileobjects passed with an encoding
-    if compat.PY3 and isinstance(path_or_buf, compat.BytesIO):
-        from io import TextIOWrapper
-        return TextIOWrapper(path_or_buf, encoding=encoding)
-
-    elif compression:
+    if compression:
         compression = compression.lower()
 
         if compat.PY2 and not is_path and encoding:
@@ -370,6 +332,11 @@ def _get_handle(path_or_buf, mode, encoding=None, compression=None,
         else:
             # Python 3 and no explicit encoding
             f = open(path_or_buf, mode, errors='replace')
+
+    # in Python 3, convert BytesIO or fileobjects passed with an encoding
+    if compat.PY3 and isinstance(path_or_buf, compat.BytesIO):
+        from io import TextIOWrapper
+        f = TextIOWrapper(f, encoding=encoding)
 
     if memory_map and hasattr(f, 'fileno'):
         try:
