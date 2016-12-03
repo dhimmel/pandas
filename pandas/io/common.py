@@ -141,18 +141,18 @@ def _is_s3_url(url):
 
 
 def maybe_read_encoded_stream(reader, encoding=None, compression=None):
-    """read an encoded stream from the reader and transform the bytes to
-    unicode if required based on the encoding
+    """
+    Read an encoded stream from the reader and transform the bytes to unicode if
+    required based on the encoding.
 
-        Parameters
-        ----------
-        reader : a streamable file-like object
-        encoding : optional, the encoding to attempt to read
+    Parameters
+    ----------
+    reader : a streamable file-like object
+    encoding : optional, the encoding to attempt to read
 
-        Returns
-        -------
-        a tuple of (a stream of decoded bytes, the encoding which was used)
-
+    Returns
+    -------
+    a tuple of (a stream of decoded bytes, the encoding which was used)
     """
 
     if compat.PY3 or encoding is not None:  # pragma: no cover
