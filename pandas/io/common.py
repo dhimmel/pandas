@@ -63,6 +63,13 @@ else:
 _VALID_URLS = set(uses_relative + uses_netloc + uses_params)
 _VALID_URLS.discard('')
 
+_compression_to_extension = {
+    'gzip': '.gz',
+    'bz2': '.bz2',
+    'zip': '.zip',
+    'xz': '.xz',
+}
+
 
 class ParserError(ValueError):
     """
@@ -234,20 +241,19 @@ def get_filepath_or_buffer(filepath_or_buffer, encoding=None,
     -------
     a filepath_or_buffer, the encoding, the compression
     """
-
+    
     if _is_url(filepath_or_buffer):
-        req = _urlopen(str(filepath_or_buffer))
+        url = str(filepath_or_buffer)
+        req = _urlopen(url)
         if compression == 'infer':
-            content_encoding = req.headers.get('Content-Encoding', None)
-            if content_encoding == 'gzip':
-                compression = 'gzip'
+            for compression, extension in _compression_to_extension.items():
+                if url.endswith(extension):
+                    break
             else:
-                compression = None
-        # cat on the compression to the tuple returned by the function
-        to_return = (list(maybe_read_encoded_stream(req, encoding,
-                                                    compression)) +
-                     [compression])
-        return tuple(to_return)
+                content_encoding = req.headers.get('Content-Encoding', None)
+                compression = 'gzip' if content_encoding == 'gzip' else None
+        reader, encoding = maybe_read_encoded_stream(req, encoding, compression)
+        return reader, encoding, compression
 
     if _is_s3_url(filepath_or_buffer):
         from pandas.io.s3 import get_filepath_or_buffer
