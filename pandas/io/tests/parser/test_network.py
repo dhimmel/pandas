@@ -46,6 +46,8 @@ class TestCompressedUrl(object):
                 yield (test_fxn, url) + args
 
     def check_table(self, url, compression, engine):
+        if compression == 'xz':
+            tm._skip_if_no_lzma()
         url_table = read_table(url, compression=compression, engine=engine)
         tm.assert_frame_equal(url_table, self.local_table)
 
