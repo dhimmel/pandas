@@ -263,7 +263,6 @@ def _get_handle(path_or_buf, mode, encoding=None, compression=None,
     is_path = isinstance(path_or_buf, compat.string_types)
 
     if compression:
-        compression = compression.lower()
 
         if compat.PY2 and not is_path and encoding:
             msg = 'compression with encoding is not yet supported in Python 2'
@@ -311,7 +310,7 @@ def _get_handle(path_or_buf, mode, encoding=None, compression=None,
 
         # Unrecognized Compression
         else:
-            msg = 'Unrecognized compression: {}'.format(compression)
+            msg = 'Unrecognized compression type: {}'.format(compression)
             raise ValueError(msg)
 
         # In Python 3
