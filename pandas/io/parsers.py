@@ -385,7 +385,8 @@ def _read(filepath_or_buffer, kwds):
 
     compression = kwds.get('compression')
     if compression not in set(_compression_to_extension) | {None, 'infer'}:
-        raise ValueError('"{}" is not a valid compression'.format(compression))
+        msg = 'Unrecognized compression type: {}'.format(compression)
+        raise ValueError(msg)
 
     if compression == 'infer':
         compression = _infer_compression(filepath_or_buffer)
