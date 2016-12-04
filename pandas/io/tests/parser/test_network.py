@@ -16,14 +16,14 @@ from pandas.io.parsers import read_csv, read_table
 
 
 class TestCompressedUrl(object):
-    
+
     compression_to_extension = {
         'gzip': '.gz',
         'bz2': '.bz2',
         'zip': '.zip',
         'xz': '.xz',
     }
-    
+
     def __init__(self):
         path = os.path.join(tm.get_data_path(), 'salaries.csv')
         self.local_table = read_table(path)
@@ -34,7 +34,7 @@ class TestCompressedUrl(object):
         """Test reading compressed tables from URL."""
         msg = ('Test reading {}-compressed tables from URL: '
                'compression="{}", engine="{}"')
-        
+
         for compression, extension in self.compression_to_extension.items():
             url = self.base_url + extension
             # args is a (compression, engine) tuple

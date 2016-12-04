@@ -201,7 +201,7 @@ def get_filepath_or_buffer(filepath_or_buffer, encoding=None,
     -------
     a filepath_or_buffer, the encoding, the compression
     """
-    
+
     if _is_url(filepath_or_buffer):
         url = str(filepath_or_buffer)
         req = _urlopen(url)
