@@ -355,6 +355,7 @@ _compression_to_extension = {
     'xz': '.xz',
 }
 
+
 def _infer_compression(filepath_or_buffer):
     """
     Infer compression of a filepath or buffer. In case of buffer, compression
@@ -368,6 +369,7 @@ def _infer_compression(filepath_or_buffer):
         if filepath.endswith(extension):
             return compression
     return None
+
 
 def _read(filepath_or_buffer, kwds):
     """Generic reader of line files."""
