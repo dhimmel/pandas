@@ -1,6 +1,5 @@
 """Common IO api utilities"""
 
-import sys
 import os
 import csv
 import codecs

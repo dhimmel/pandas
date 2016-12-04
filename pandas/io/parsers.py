@@ -27,7 +27,6 @@ from pandas.core.series import Series
 from pandas.core.frame import DataFrame
 from pandas.core.categorical import Categorical
 from pandas.core.common import AbstractMethodError
-from pandas.core.config import get_option
 from pandas.io.date_converters import generic_parser
 from pandas.io.common import (get_filepath_or_buffer, _validate_header_arg,
                               _get_handle, UnicodeReader, UTF8Recoder,
