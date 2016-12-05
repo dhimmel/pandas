@@ -31,7 +31,7 @@ from pandas.io.date_converters import generic_parser
 from pandas.io.common import (get_filepath_or_buffer, _validate_header_arg,
                               _get_handle, UnicodeReader, UTF8Recoder,
                               BaseIterator, ParserError, EmptyDataError,
-                              ParserWarning, _NA_VALUES)
+                              ParserWarning, _NA_VALUES, _infer_compression)
 from pandas.tseries import tools
 
 from pandas.util.decorators import Appender
@@ -347,29 +347,6 @@ def _validate_nrows(nrows):
     return nrows
 
 
-_compression_to_extension = {
-    'gzip': '.gz',
-    'bz2': '.bz2',
-    'zip': '.zip',
-    'xz': '.xz',
-}
-
-
-def _infer_compression(filepath_or_buffer):
-    """
-    Infer compression of a filepath or buffer. In case of buffer, compression
-    is None. Otherwise, inference is perfomed using the extension of the
-    filename or URL.
-    """
-    if not isinstance(filepath_or_buffer, compat.string_types):
-        return None
-    filepath = str(filepath_or_buffer)
-    for compression, extension in _compression_to_extension.items():
-        if filepath.endswith(extension):
-            return compression
-    return None
-
-
 def _read(filepath_or_buffer, kwds):
     """Generic reader of line files."""
     encoding = kwds.get('encoding', None)
@@ -378,13 +355,7 @@ def _read(filepath_or_buffer, kwds):
         kwds['encoding'] = encoding
 
     compression = kwds.get('compression')
-    if compression not in set(_compression_to_extension) | {None, 'infer'}:
-        msg = 'Unrecognized compression type: {}'.format(compression)
-        raise ValueError(msg)
-
-    if compression == 'infer':
-        compression = _infer_compression(filepath_or_buffer)
-
+    compression = _infer_compression(filepath_or_buffer, compression)
     filepath_or_buffer, _, compression = get_filepath_or_buffer(
         filepath_or_buffer, encoding, compression)
     kwds['compression'] = compression
