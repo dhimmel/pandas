@@ -271,8 +271,8 @@ def _infer_compression(filepath_or_buffer, compression):
         return compression
 
     msg = 'Unrecognized compression type: {}'.format(compression)
-    valid = sorted(set(_compression_to_extension) | {None, 'infer'})
-    msg += '\nValid compression types are {}'.format(', '.join(valid))
+    valid = ['infer', None] + sorted(_compression_to_extension)
+    msg += '\nValid compression types are {}'.format(valid)
     raise ValueError(msg)
 
 
