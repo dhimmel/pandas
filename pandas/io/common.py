@@ -237,6 +237,45 @@ def file_path_to_url(path):
     return urljoin('file:', pathname2url(path))
 
 
+_compression_to_extension = {
+    'gzip': '.gz',
+    'bz2': '.bz2',
+    'zip': '.zip',
+    'xz': '.xz',
+}
+
+
+def _infer_compression(filepath_or_buffer, compression):
+    """
+    If compression='infer', infer compression. If compression
+    """
+
+    # No compression has been explicitly specified
+    if compression is None:
+        return None
+
+    # Cannot infer compression of a buffer. Hence assume no compression.
+    is_path = isinstance(filepath_or_buffer, compat.string_types)
+    if compression == 'infer' and not is_path:
+        return None
+
+    # Infer compression from the filename/URL extension
+    if compression == 'infer':
+        for compression, extension in _compression_to_extension.items():
+            if filepath_or_buffer.endswith(extension):
+                return compression
+        return None
+
+    # Compression has been specified. Check that it's valid
+    if compression in _compression_to_extension:
+        return compression
+
+    msg = 'Unrecognized compression type: {}'.format(compression)
+    valid = ['infer', None] + sorted(_compression_to_extension)
+    msg += '\nValid compression types are {}'.format(valid)
+    raise ValueError(msg)
+
+
 def _get_handle(path_or_buf, mode, encoding=None, compression=None,
                 memory_map=False):
     """
