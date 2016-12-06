@@ -324,6 +324,7 @@ def _get_handle(path_or_buf, mode, encoding=None, compression=None,
                 # Python 2's bz2 module can't take file objects, so have to
                 # run through decompress manually
                 f = StringIO(bz2.decompress(path_or_buf.read()))
+                path_or_buf.close()
             else:
                 f = bz2.BZ2File(path_or_buf)
 
