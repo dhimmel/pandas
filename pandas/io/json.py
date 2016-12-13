@@ -259,8 +259,8 @@ def read_json(path_or_buf=None, orient=None, typ='frame', dtype=True,
             exists = False
 
         if exists:
-            fh, new_handle = _get_handle(filepath_or_buffer, 'r',
-                                         encoding=encoding)
+            fh, handles = _get_handle(filepath_or_buffer, 'r',
+                                      encoding=encoding)
             json = fh.read()
             fh.close()
         else:

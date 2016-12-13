@@ -1805,11 +1805,10 @@ class PythonParser(ParserBase):
         self.comment = kwds['comment']
         self._comment_lines = []
 
-        f, new_handle = _get_handle(f, 'r', encoding=self.encoding,
-                                    compression=self.compression,
-                                    memory_map=self.memory_map)
-        if new_handle is not None:
-            self.handles.append(new_handle)
+        f, handles = _get_handle(f, 'r', encoding=self.encoding,
+                                 compression=self.compression,
+                                 memory_map=self.memory_map)
+        self.handles.extend(handles)
 
         # Set self.data to something that can read lines.
         if hasattr(f, 'readline'):

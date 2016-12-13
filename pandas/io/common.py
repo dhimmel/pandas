@@ -297,12 +297,11 @@ def _get_handle(path_or_buf, mode, encoding=None, compression=None,
     -------
     f : file-like
         A file-like object
-    new_handle : file-like or None
-        A file-like object that was openned in this function. Or None if none
-        were openned.
+    handles : list of file-like objects
+        A list of file-like object that were openned in this function.
     """
 
-    new_handle = None
+    handles = list()
     f = path_or_buf
     is_path = isinstance(path_or_buf, compat.string_types)
 
@@ -358,13 +357,15 @@ def _get_handle(path_or_buf, mode, encoding=None, compression=None,
             msg = 'Unrecognized compression type: {}'.format(compression)
             raise ValueError(msg)
 
+        handles.append(f)
+
         # In Python 3
         if compat.PY3:
             from io import TextIOWrapper
             f = TextIOWrapper(f, encoding=encoding)
+            handles.append(f)
 
-        new_handle = f
-        return f, new_handle
+        return f, handles
 
     elif is_path:
         if compat.PY2:
@@ -376,13 +377,13 @@ def _get_handle(path_or_buf, mode, encoding=None, compression=None,
         else:
             # Python 3 and no explicit encoding
             f = open(path_or_buf, mode, errors='replace')
-        new_handle = f
+        handles.append(f)
 
     # in Python 3, convert BytesIO or fileobjects passed with an encoding
     if compat.PY3 and isinstance(path_or_buf, compat.BytesIO):
         from io import TextIOWrapper
         f = TextIOWrapper(f, encoding=encoding)
-        new_handle = f
+        handles.append(f)
 
     if memory_map and hasattr(f, 'fileno'):
         try:
@@ -396,7 +397,7 @@ def _get_handle(path_or_buf, mode, encoding=None, compression=None,
             # leave the file handler as is then
             pass
 
-    return f, new_handle
+    return f, handles
 
 
 class MMapWrapper(BaseIterator):
