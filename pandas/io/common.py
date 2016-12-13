@@ -359,14 +359,6 @@ def _get_handle(path_or_buf, mode, encoding=None, compression=None,
 
         handles.append(f)
 
-        # In Python 3
-        if compat.PY3:
-            from io import TextIOWrapper
-            f = TextIOWrapper(f, encoding=encoding)
-            handles.append(f)
-
-        return f, handles
-
     elif is_path:
         if compat.PY2:
             # Python 2
@@ -380,7 +372,7 @@ def _get_handle(path_or_buf, mode, encoding=None, compression=None,
         handles.append(f)
 
     # in Python 3, convert BytesIO or fileobjects passed with an encoding
-    if compat.PY3 and isinstance(path_or_buf, compat.BytesIO):
+    if compat.PY3 and (compression or isinstance(f, compat.BytesIO)):
         from io import TextIOWrapper
         f = TextIOWrapper(f, encoding=encoding)
         handles.append(f)
